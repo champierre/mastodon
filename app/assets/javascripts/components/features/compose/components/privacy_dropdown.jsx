@@ -3,6 +3,8 @@ import { injectIntl, defineMessages } from 'react-intl';
 import IconButton from '../../../components/icon_button';
 
 const messages = defineMessages({
+  geo_short: { id: 'privacy.geo.short', defaultMessage: 'Location' },
+  geo_long: { id: 'privacy.geo.long', defaultMessage: 'Post to public timelines with location info' },
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   public_long: { id: 'privacy.public.long', defaultMessage: 'Post to public timelines' },
   unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Unlisted' },
@@ -67,6 +69,7 @@ class PrivacyDropdown extends React.PureComponent {
     const { open } = this.state;
 
     const options = [
+      { icon: 'map-marker', value: 'geo', shortText: intl.formatMessage(messages.geo_short), longText: intl.formatMessage(messages.geo_long) },
       { icon: 'globe', value: 'public', shortText: intl.formatMessage(messages.public_short), longText: intl.formatMessage(messages.public_long) },
       { icon: 'unlock-alt', value: 'unlisted', shortText: intl.formatMessage(messages.unlisted_short), longText: intl.formatMessage(messages.unlisted_long) },
       { icon: 'lock', value: 'private', shortText: intl.formatMessage(messages.private_short), longText: intl.formatMessage(messages.private_long) },

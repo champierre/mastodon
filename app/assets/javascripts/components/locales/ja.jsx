@@ -125,6 +125,8 @@ const ja = {
   "privacy.public.short": "公開",
   "privacy.unlisted.long": "公開TLで表示しない",
   "privacy.unlisted.short": "未収載",
+  "privacy.geo.long": "公開TLに位置情報付きで投稿する",
+  "privacy.geo.short": "公開(位置情報付き)",
   "reply_indicator.cancel": "キャンセル",
   "report.heading": "新規通報",
   "report.placeholder": "コメント",
