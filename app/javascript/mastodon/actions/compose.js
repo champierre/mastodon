@@ -78,45 +78,78 @@ export function submitCompose() {
       return;
     }
     dispatch(submitComposeRequest());
-    if (!navigator.geolocation){
-      console.log("navigator.geolocation is not supported.");
+    let visibility = getState().getIn(['compose', 'privacy']);
+    if (visibility == 'geo') {
+      if (!navigator.geolocation){
+        console.log("navigator.geolocation is not supported.");
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          function(position){
+            api(getState).post('/api/v1/statuses', {
+              status,
+              in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
+              media_ids: getState().getIn(['compose', 'media_attachments']).map(item => item.get('id')),
+              sensitive: getState().getIn(['compose', 'sensitive']),
+              spoiler_text: getState().getIn(['compose', 'spoiler_text'], ''),
+              visibility: getState().getIn(['compose', 'privacy']),
+              lon: position.coords.longitude,
+              lat: position.coords.latitude
+            }, {
+              headers: {
+                'Idempotency-Key': getState().getIn(['compose', 'idempotencyKey'])
+              }
+            }).then(function (response) {
+              dispatch(submitComposeSuccess({ ...response.data }));
+
+              // To make the app more responsive, immediately get the status into the columns
+              dispatch(updateTimeline('home', { ...response.data }));
+
+              if (response.data.in_reply_to_id === null && response.data.visibility === 'public') {
+                if (getState().getIn(['timelines', 'community', 'loaded'])) {
+                  dispatch(updateTimeline('community', { ...response.data }));
+                }
+
+                if (getState().getIn(['timelines', 'public', 'loaded'])) {
+                  dispatch(updateTimeline('public', { ...response.data }));
+                }
+              }
+            }).catch(function (error) {
+              dispatch(submitComposeFail(error));
+            });
+          },
+          function(error){ console.log('Error', error); }
+        );
+      }
     } else {
-      navigator.geolocation.getCurrentPosition(
-        function(position){
-          api(getState).post('/api/v1/statuses', {
-            status,
-            in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
-            media_ids: getState().getIn(['compose', 'media_attachments']).map(item => item.get('id')),
-            sensitive: getState().getIn(['compose', 'sensitive']),
-            spoiler_text: getState().getIn(['compose', 'spoiler_text'], ''),
-            visibility: getState().getIn(['compose', 'privacy']),
-            lon: position.coords.longitude,
-            lat: position.coords.latitude
-          }, {
-            headers: {
-              'Idempotency-Key': getState().getIn(['compose', 'idempotencyKey'])
-            }
-          }).then(function (response) {
-            dispatch(submitComposeSuccess({ ...response.data }));
+      api(getState).post('/api/v1/statuses', {
+        status,
+        in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
+        media_ids: getState().getIn(['compose', 'media_attachments']).map(item => item.get('id')),
+        sensitive: getState().getIn(['compose', 'sensitive']),
+        spoiler_text: getState().getIn(['compose', 'spoiler_text'], ''),
+        visibility: getState().getIn(['compose', 'privacy'])
+      }, {
+        headers: {
+          'Idempotency-Key': getState().getIn(['compose', 'idempotencyKey'])
+        }
+      }).then(function (response) {
+        dispatch(submitComposeSuccess({ ...response.data }));
 
-            // To make the app more responsive, immediately get the status into the columns
-            dispatch(updateTimeline('home', { ...response.data }));
+        // To make the app more responsive, immediately get the status into the columns
+        dispatch(updateTimeline('home', { ...response.data }));
 
-            if (response.data.in_reply_to_id === null && response.data.visibility === 'public') {
-              if (getState().getIn(['timelines', 'community', 'loaded'])) {
-                dispatch(updateTimeline('community', { ...response.data }));
-              }
+        if (response.data.in_reply_to_id === null && response.data.visibility === 'public') {
+          if (getState().getIn(['timelines', 'community', 'loaded'])) {
+            dispatch(updateTimeline('community', { ...response.data }));
+          }
 
-              if (getState().getIn(['timelines', 'public', 'loaded'])) {
-                dispatch(updateTimeline('public', { ...response.data }));
-              }
-            }
-          }).catch(function (error) {
-            dispatch(submitComposeFail(error));
-          });
-        },
-        function(error){ console.log('Error', error); }
-      );
+          if (getState().getIn(['timelines', 'public', 'loaded'])) {
+            dispatch(updateTimeline('public', { ...response.data }));
+          }
+        }
+      }).catch(function (error) {
+        dispatch(submitComposeFail(error));
+      });
     }
   };
 };
