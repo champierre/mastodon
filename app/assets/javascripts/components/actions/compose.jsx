@@ -81,7 +81,8 @@ export function submitCompose() {
     let visibility = getState().getIn(['compose', 'privacy']);
     if (visibility == 'geo') {
       if (!navigator.geolocation){
-        console.log("navigator.geolocation is not supported.");
+        alert('Geolocation is not supported for this browser.');
+        return;
       } else {
         navigator.geolocation.getCurrentPosition(
           function(position){
@@ -117,7 +118,10 @@ export function submitCompose() {
               dispatch(submitComposeFail(error));
             });
           },
-          function(error){ console.log('Error', error); }
+          function(error){
+            console.log('navigator.geolocation error', error);
+            dispatch(submitComposeFail(error));
+          }
         );
       }
     } else {
