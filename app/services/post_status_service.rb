@@ -28,6 +28,8 @@ class PostStatusService < BaseService
                                         spoiler_text: options[:spoiler_text] || '',
                                         visibility: options[:visibility],
                                         language: detect_language_for(text, account),
+                                        lat: options[:lat],
+                                        lon: options[:lon],
                                         application: options[:application])
       attach_media(status, media)
     end
