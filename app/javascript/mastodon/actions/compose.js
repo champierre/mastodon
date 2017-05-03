@@ -4,8 +4,6 @@ import { updateTimeline } from './timelines';
 
 import * as emojione from 'emojione';
 
-import 'babel-polyfill';
-
 export const COMPOSE_CHANGE          = 'COMPOSE_CHANGE';
 export const COMPOSE_SUBMIT_REQUEST  = 'COMPOSE_SUBMIT_REQUEST';
 export const COMPOSE_SUBMIT_SUCCESS  = 'COMPOSE_SUBMIT_SUCCESS';
