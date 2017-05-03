@@ -72,34 +72,24 @@ export function mentionCompose(account, router) {
 };
 
 export function submitCompose() {
-  return function (dispatch, getState) {
+  return async function (dispatch, getState) {
     const status = emojione.shortnameToUnicode(getState().getIn(['compose', 'text'], ''));
     if (!status || !status.length) {
       return;
     }
     dispatch(submitComposeRequest());
+
+    let position;
     let visibility = getState().getIn(['compose', 'privacy']);
     if (visibility == 'geo') {
-      if (!navigator.geolocation){
-        alert('Geolocation is not supported for this browser.');
-        return;
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          function(position) { dispatch(postCompose(status, position)); },
-          function(error){
-            console.log('navigator.geolocation error', error);
-            dispatch(submitComposeFail(error));
-          }
-        );
+      try {
+        position = await getCurrentPosition();
+      } catch (error) {
+        console.log('navigator.geolocation error', error);
+        dispatch(submitComposeFail(error));
       }
-    } else {
-      dispatch(postCompose(status));
     }
-  };
-};
 
-export function postCompose(status, position = null) {
-  return function(dispatch, getState) {
     api(getState).post('/api/v1/statuses', {
       status,
       in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
@@ -131,6 +121,13 @@ export function postCompose(status, position = null) {
     }).catch(function (error) {
       dispatch(submitComposeFail(error));
     });
+
+    // Promise version of getCurrentPosition
+    function getCurrentPosition() {
+      return new Promise(function(resolve, reject) {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+    };
   };
 };
 
