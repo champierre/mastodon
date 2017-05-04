@@ -220,9 +220,13 @@ Container.propTypes = {
 class Mastodon extends React.Component {
 
   componentDidMount() {
-    const { locale }  = this.props;
+    const { locale, gmapKey }  = this.props;
     const streamingAPIBaseURL = store.getState().getIn(['meta', 'streaming_api_base_url']);
     const accessToken = store.getState().getIn(['meta', 'access_token']);
+
+    // FIXME
+    // Better way to set as a global constant.
+    window.gmapKey = gmapKey;
 
     this.subscription = createStream(streamingAPIBaseURL, accessToken, 'user', {
 

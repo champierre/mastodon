@@ -94,7 +94,16 @@ class StatusContent extends React.PureComponent {
     const { status } = this.props;
     const { hidden } = this.state;
 
-    const content = { __html: emojify(status.get('content')) };
+    let map = ''
+    let lat = status.get('lat');
+    let lon = status.get('lon');
+    if (lat && lon) {
+      map = "<a href='https://maps.google.co.jp/maps?q=" + lat + "," + lon + "' target='_blank'><img src='" +
+        "https://maps.googleapis.com/maps/api/staticmap?center=" + lat + "%2C" + lon +
+        "&markers=color%3Ared%7Csize%3Amid%7C" + lat + "%2C" + lon +
+        "&zoom=15&size=200x100&sensor=false&key=" + window.gmapKey + "'></a>"
+    }
+    const content = { __html: emojify(status.get('content')) + map };
     const spoilerContent = { __html: emojify(escapeTextContentForBrowser(status.get('spoiler_text', ''))) };
     const directionStyle = { direction: 'ltr' };
 

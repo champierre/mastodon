@@ -78,13 +78,37 @@ export function submitCompose() {
       return;
     }
     dispatch(submitComposeRequest());
+    let visibility = getState().getIn(['compose', 'privacy']);
+    if (visibility == 'geo') {
+      if (!navigator.geolocation){
+        alert('Geolocation is not supported for this browser.');
+        return;
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          function(position) { dispatch(postCompose(status, position)); },
+          function(error){
+            console.log('navigator.geolocation error', error);
+            dispatch(submitComposeFail(error));
+          }
+        );
+      }
+    } else {
+      dispatch(postCompose(status));
+    }
+  };
+};
+
+export function postCompose(status, position = null) {
+  return function(dispatch, getState) {
     api(getState).post('/api/v1/statuses', {
       status,
       in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
       media_ids: getState().getIn(['compose', 'media_attachments']).map(item => item.get('id')),
       sensitive: getState().getIn(['compose', 'sensitive']),
       spoiler_text: getState().getIn(['compose', 'spoiler_text'], ''),
-      visibility: getState().getIn(['compose', 'privacy'])
+      visibility: getState().getIn(['compose', 'privacy']),
+      lon: position ? position.coords.longitude : null,
+      lat: position ? position.coords.latitude : null
     }, {
       headers: {
         'Idempotency-Key': getState().getIn(['compose', 'idempotencyKey'])
